@@ -8,9 +8,9 @@ bool isQuiet(bool isCapture, bool isPromotion, bool isInCheck) {
 
 int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0) {
     if (!(Load(ec.is_running)) || checkTime(false, ec, ess, t0)) return 0;
-    if (ply >= MAX_PLY) return evaluate(board); // TODO: add evaluation here
+    if (ply >= MAX_PLY) return evaluate(board);
 
-    int32_t bestValue = evaluate(board); // TODO: add evaluation here
+    int32_t bestValue = evaluate(board);
     if (bestValue >= beta) return bestValue;
     if (bestValue > alpha) alpha = bestValue;
 
@@ -41,7 +41,7 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
 int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0) {
     bool time = checkTime(false, ec, ess, t0);
     if (time) return 0;
-    if (ply >= MAX_PLY) return evaluate(board); // TODO: add evaluation here
+    if (ply >= MAX_PLY) return evaluate(board);
 
     
     ess.pvLength[ply] = ply;
