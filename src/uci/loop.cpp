@@ -155,8 +155,7 @@ void UCILoop() {
         if (uci_controller.debug) FlushPrint("info string UCI command got: \""+ line + "\"\n");
 
         if (line.empty()) continue;
-
-        // Get the vector of words from "line".
+        
         words_vector word = SplitWords(line);
         if (word.empty()) continue;
 

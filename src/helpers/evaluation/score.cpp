@@ -1,41 +1,35 @@
 #include "score.hpp"
 
+static constexpr uint8_t KNIGHTS_WEIGHT = 1;
+static constexpr uint8_t BISHOPS_WEIGHT = 1;
+static constexpr uint8_t ROOKS_WEIGHT   = 2;
+static constexpr uint8_t QUEENS_WEIGHT  = 4;
+
+
 
 int getPhase(const chess::Board& board) {
-    chess::Bitboard occ = board.occ();
     int phase = 0;
 
-    while (occ) {
-        const int idx = occ.pop();
-        const chess::Piece piece = board.at(idx);
+    chess::Bitboard knights = board.pieces(chess::PieceType::KNIGHT);
+    chess::Bitboard bishops = board.pieces(chess::PieceType::BISHOP);
+    chess::Bitboard rooks   = board.pieces(chess::PieceType::ROOK);
+    chess::Bitboard queens  = board.pieces(chess::PieceType::QUEEN);
 
-        switch (piece) {
-            case chess::Piece(chess::Piece::WHITEKNIGHT):
-            case chess::Piece(chess::Piece::WHITEBISHOP):
-            case chess::Piece(chess::Piece::BLACKKNIGHT):
-            case chess::Piece(chess::Piece::BLACKBISHOP):
-                phase += 1;
-                break;
-            case chess::Piece(chess::Piece::WHITEROOK):
-            case chess::Piece(chess::Piece::BLACKROOK):
-                phase += 2;
-                break;
-            case chess::Piece(chess::Piece::WHITEQUEEN):
-            case chess::Piece(chess::Piece::BLACKQUEEN):
-                phase += 4;
-                break;
-        }
-    }
+    phase += KNIGHTS_WEIGHT * knights.count();
+    phase += BISHOPS_WEIGHT * bishops.count();
+    phase += ROOKS_WEIGHT   * rooks.count();
+    phase += QUEENS_WEIGHT  * queens.count();
 
     return phase;
 }
 
-int32_t Blend(const chess::Board& board, score& s) {
-    int32_t mg = s.middlegame;
-    int32_t eg = s.endgame;
+int32_t Blend(const chess::Board& board, score& value) {
+    int32_t mg = value.middlegame;
+    int32_t eg = value.endgame;
 
     int phase = getPhase(board);
     if (phase > 24) phase = 24;
+
     int result = (mg * phase + eg * (24 - phase)) / 24;
     return result;
 }

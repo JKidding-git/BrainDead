@@ -16,14 +16,9 @@ inline void FlushPrint(std::string input) {
 /// @param input String input.
 /// @return A vector of words.
 inline words_vector SplitWords(std::string input) {
-
-    // Initialize output vector.
     words_vector output;
 
-    // Uses boost to split the words up.
     // A lil overkill, but it works I guess.
     boost::split(output, input, boost::is_any_of(" "), boost::token_compress_on);
-
-    // Outputs the output (lmao)
     return output;
 }

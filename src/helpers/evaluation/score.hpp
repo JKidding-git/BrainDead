@@ -13,7 +13,7 @@ struct score {
 /// @return A score object containing both middlegame and endgame values.
 inline constexpr score S(const int32_t middlegame, const int32_t endgame) {return {middlegame, endgame};}
 
-int32_t Blend(const chess::Board& board, score& score);
+int32_t Blend(const chess::Board& board, score& value);
 
 // Others, please ignore.
 
