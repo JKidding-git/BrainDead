@@ -11,6 +11,10 @@ void initPV(EngineSearchStuff& ess) {
 }
 
 void AddPV(chess::Move& new_move, EngineSearchStuff& ess, int ply) {
+
+    // bandaid fix.
+    if (ply >= MAX_PLY - 1) return;
+
     ess.pvTable[ply][ply] = new_move;
     for (int pvi = ply + 1; pvi < ess.pvLength[ply + 1]; ++pvi) ess.pvTable[ply][pvi] = ess.pvTable[ply + 1][pvi];
     ess.pvLength[ply] = ess.pvLength[ply + 1];

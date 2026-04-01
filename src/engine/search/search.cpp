@@ -1,6 +1,7 @@
 #include "search.hpp"
 #include "../../helpers/misc.hpp"
 #include "../evaluation/evaluate.hpp"
+#include "move_picker.hpp"
 
 bool isQuiet(bool isCapture, bool isPromotion, bool isInCheck) {
     return !isCapture && !isPromotion && !isInCheck;
@@ -16,9 +17,13 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
 
     chess::Movelist moves;
     chess::movegen::legalmoves<chess::movegen::MoveGenType::CAPTURE>(moves, board);
+    ScoreMoves<true>(board, moves);
+
 
     for (int i = 0; i < moves.size(); ++i) {
         ++ess.nodes;
+
+        PickMove(moves, i);
         chess::Move move = moves[i];
 
         board.makeMove(move);
@@ -67,10 +72,12 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
 
     chess::Movelist moves;
     chess::movegen::legalmoves(moves, board);
+    ScoreMoves<false>(board, moves);
 
     for (int i = 0; i < moves.size(); ++i) {
         ess.nodes++;
 
+        PickMove(moves, i);
         chess::Move move = moves[i];
 
         board.makeMove(move);

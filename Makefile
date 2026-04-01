@@ -8,7 +8,7 @@ evaluation = src/engine/evaluation/evaluate.cpp
 
 source=src/main.cpp $(helper) $(uci) $(uci_options) $(search) $(evaluation)
 out=src/output/
-name=brain_dead_v0.003
+name=brain_dead_v0.004
 cmd=-std=c++26 -pthread -O3 -march=native -Wall
 
 ifeq ($(OS),Windows_NT)
