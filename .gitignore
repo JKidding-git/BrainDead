@@ -42,3 +42,7 @@
 
 # folders
 backed/
+
+# everything in src/output is ignored, but not placeholder.txt
+src/output/*
+!src/output/placeholder.txt

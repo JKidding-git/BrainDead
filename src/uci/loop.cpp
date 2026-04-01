@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <vector>
-#include <boost/algorithm/string.hpp>
 #include <string>
 #include <cstdint>
 #include <cassert>

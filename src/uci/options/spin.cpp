@@ -1,4 +1,5 @@
 #include "spin.hpp"
+#include <cassert>
 
 void AddSpin(const std::string& name, int default_value, int minimum_value, int maximum_value, umap_spin& entries) {
     

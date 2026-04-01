@@ -1,4 +1,5 @@
 #include "check.hpp"
+#include <cassert>
 
 void AddCheck(const std::string& name, bool value, umap_check& entries) {
 

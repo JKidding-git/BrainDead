@@ -6,11 +6,11 @@ BrainDead is a [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)-co
 BrainDead does **NOT** include a [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface), if you want to use a [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface). I recommend [**Cute Chess**](https://cutechess.com/) as it's easy to use.
 
 ## Building the [chess engine](https://en.wikipedia.org/wiki/Chess_engine)
-To build the [chess engine](https://en.wikipedia.org/wiki/Chess_engine) itself, you **MUST** have [**g++**](https://en.wikipedia.org/wiki/GNU_Compiler_Collection) and [**Boost**](https://www.boost.org/). To install both of those, please look elsewhere.
+To build the [chess engine](https://en.wikipedia.org/wiki/Chess_engine) itself, you **MUST** have g++. To install g++, please look elsewhere.
 
 **NOTE**: You also need to support Makefile.
 
-After installing both of those, run ```make``` and the [chess engine](https://en.wikipedia.org/wiki/Chess_engine)'s output should be in the output folder in ```src/``` sub-directory.
+After installing g++, run ```make``` and the [chess engine](https://en.wikipedia.org/wiki/Chess_engine)'s output should be in the output folder in ```src/``` sub-directory.
 
 ## Configuration
 BrainDead has ~~a lot~~ a small number of configuration options, most [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface) should support some ways to set each option. If they do not, then refer to the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) specification.

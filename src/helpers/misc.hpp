@@ -2,7 +2,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <boost/algorithm/string.hpp>
+#include <algorithm>
+#include <sstream>
 
 using words_vector = std::vector<std::string>;
 
@@ -15,10 +16,18 @@ inline void FlushPrint(std::string input) {
 /// @brief Splits the string input into a vector of words.
 /// @param input String input.
 /// @return A vector of words.
-inline words_vector SplitWords(std::string input) {
-    words_vector output;
+inline words_vector SplitWords(const std::string& input) {
 
-    // A lil overkill, but it works I guess.
-    boost::split(output, input, boost::is_any_of(" "), boost::token_compress_on);
+    // if the input is empty, return a vector with ""
+    if (input.empty()) return {""};
+
+    words_vector output;
+    std::stringstream ss(input);
+
+    std::string word;
+    while (ss >> word) {
+        output.push_back(word);
+    }
+
     return output;
 }
