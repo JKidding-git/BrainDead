@@ -61,6 +61,11 @@ inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, Engine
                     continue;
                 }
             }
+
+            bool side = board.sideToMove() == chess::Color::WHITE;
+            int from = move.from().index();
+            int to = move.to().index();
+            move.setScore(ess.history[side][from][to]);
         }
     }
 }

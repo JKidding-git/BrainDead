@@ -4,9 +4,10 @@
 #include "../evaluation/evaluate.hpp"
 #include "move_picker.hpp"
 
-bool isQuiet(bool isCapture, bool isPromotion, bool isInCheck) {
-    return !isCapture && !isPromotion && !isInCheck;
-}
+// bonus_squared[depth-1]
+static constexpr int bonus_squared[MAX_PLY] = {1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256, 289, 324, 361, 400, 441, 484, 529, 576, 625, 676, 729, 784, 841, 900, 961, 1024, 1089, 1156, 1225, 1296, 1369, 1444, 1521, 1600, 1681, 1764, 1849, 1936, 2025, 2116, 2209, 2304, 2401, 2500, 2601, 2704, 2809, 2916, 3025, 3136, 3249, 3364, 3481, 3600};
+
+
 
 int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0) {
     if (!(Load(ec.is_running)) || checkTime(false, ec, ess, t0)) return 0;
@@ -42,7 +43,6 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
 
     return bestValue;
 }
-
 
 int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0) {
     bool time = checkTime(false, ec, ess, t0);
@@ -114,6 +114,18 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
                 if (score >= beta) {
                     if (!board.isCapture(move)) {
                         AddKiller(move, ess, ply);
+
+                        int bonus = bonus_squared[depth - 1];
+
+                        bool side = board.sideToMove() == chess::Color::WHITE;
+                        int from = move.from().index();
+                        int to = move.to().index();
+
+                        int history_score = (
+                            bonus - ess.history[side][from][to] * bonus / 16384 
+                        );
+
+                        ess.history[side][from][to] += history_score;
                     }
                     break;
                 }
@@ -152,6 +164,7 @@ void IterativeDeepening(chess::Board& board, EngineSearchStuff& ess, EngineContr
     if (maxDepth <= 0) maxDepth = MAX_PLY;
 
     for (int d = 1; d <= maxDepth; ++d) {
+        ResetHistory(ess);
         score = alphaBeta(board, -VALUE_INFINITE, VALUE_INFINITE, d, 0, ess, ec, t0);
 
         if (!(Load(ec.is_running)) || checkTime(true, ec, ess, t0)) break;

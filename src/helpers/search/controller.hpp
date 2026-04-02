@@ -29,6 +29,17 @@ struct EngineSearchStuff {
     chess::Move pvTable[MAX_PLY][MAX_PLY];
     uint64_t nodes = 0;
     int checks = CHECK_RATE;
+    int history[2][64][64] = {};
 
     chess::Move killerMoves[2][MAX_PLY];
 };
+
+constexpr void ResetHistory(EngineSearchStuff& ess) {
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 64; j++) {
+            for (int k = 0; k < 64; k++) {
+                ess.history[i][j][k] = 0;
+            }
+        }
+    }
+}
