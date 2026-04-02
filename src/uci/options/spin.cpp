@@ -1,5 +1,6 @@
 #include "spin.hpp"
 #include <cassert>
+#include "../../engine/search/tt.hpp"
 
 void AddSpin(const std::string& name, int default_value, int minimum_value, int maximum_value, umap_spin& entries) {
     
@@ -38,6 +39,10 @@ void ChangeSpin(const std::string& name, int new_value, umap_spin& entries) {
 
     // Overwrite the entry's default value.
     entries[name].default_value = new_value;
+
+    if (name == "hash_mb") {
+        tt.resize();
+    }
 }
 
 void ShowAllSpinsForUCI(umap_spin& entries) {

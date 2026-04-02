@@ -146,6 +146,7 @@ void UCILoop() {
 
 
     AddSpin("move_overhead", 50, 0, 5000, spin_entries);
+    AddSpin("hash_mb", 16, 1, 1024*16, spin_entries);
 
     FlushPrint("stuff is initialized\n");
     while(std::getline(std::cin, line)) {

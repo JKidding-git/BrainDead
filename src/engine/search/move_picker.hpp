@@ -3,6 +3,7 @@
 #include "../../include/chess.hpp"
 #include <algorithm>
 #include "../../helpers/search/controller.hpp"
+#include "tt.hpp"
 
 
 
@@ -16,6 +17,7 @@ static constexpr int mvv_scores[6][6] = {
     {3100, 3325, 3350, 3500, 3900, 26000},
 };
 
+static constexpr int TT_BONUS = 1'000'000;
 static constexpr int CAPTURE_BONUS = 32'000;
 
 constexpr int mvv_lva(const chess::PieceType& attacker, const chess::PieceType& victim) {
@@ -23,7 +25,7 @@ constexpr int mvv_lva(const chess::PieceType& attacker, const chess::PieceType& 
 }
 
 template <bool inQs>
-inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, EngineSearchStuff& ess, int ply) {
+inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, EngineSearchStuff& ess, int ply, chess::Move ttMove) {
     for (int move_index = 0; move_index < moves.size(); move_index++) {
         if constexpr (inQs) {
             chess::Move& move = moves[move_index];
@@ -35,6 +37,13 @@ inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, Engine
             
 
             chess::Move& move = moves[move_index];
+
+            if (move == ttMove) {
+                move.setScore(TT_BONUS);
+                continue;
+            }
+
+
             if (board.isCapture(move)) {
                 chess::PieceType attacker = board.at(move.from()).type();
                 chess::PieceType victim = board.at(move.to()).type();

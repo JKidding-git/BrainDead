@@ -18,7 +18,7 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
 
     chess::Movelist moves;
     chess::movegen::legalmoves<chess::movegen::MoveGenType::CAPTURE>(moves, board);
-    ScoreMoves<true>(board, moves, ess, ply);
+    ScoreMoves<true>(board, moves, ess, ply, chess::Move::NULL_MOVE);
 
 
     for (int i = 0; i < moves.size(); ++i) {
@@ -52,6 +52,10 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
     
     ess.pvLength[ply] = ply;
     bool RootNode = ply == 0;
+    uint64_t hash = board.hash();
+    
+    // just a little optimization trick, hopefully it works.
+    tt.Prefetch(hash);
 
     if (!RootNode) {
         if (board.isRepetition(1)) return -5;
@@ -65,15 +69,30 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
 
     if (depth <= 0) return qSearch(board, alpha, beta, ply, ess, ec, t0);
 
+    TTEntry tte = tt.ProbeEntry(hash);
+    bool tt_hit = tte.key == hash;
+    chess::Move ttMove = tt_hit ? tte.move : chess::Move::NULL_MOVE;
+
+    int tt_score = 0;
+    if (tt_hit) tt_score = tt.ScoreFromTT(tte.score, ply);
+    else tt_score = VALUE_NONE;
+
+    if (!RootNode && tte.depth >= depth && tt_hit) {
+        if (tte.flag == FLAGS::LOWERBOUND) alpha = std::max(alpha, tt_score);
+        else if (tte.flag == FLAGS::UPPERBOUND) beta = std::min(beta, tt_score);
+
+
+        if (alpha >= beta) return tt_score;
+    }
+
     int bestScore = -VALUE_INFINITE;
     chess::Move bestMove = chess::Move::NULL_MOVE;
     bool inCheck = board.inCheck();
-
-    int madeMoves = 0;
+    int old_alpha = alpha;
 
     chess::Movelist moves;
     chess::movegen::legalmoves(moves, board);
-    ScoreMoves<false>(board, moves, ess, ply);
+    ScoreMoves<false>(board, moves, ess, ply, ttMove);
 
     for (int i = 0; i < moves.size(); ++i) {
         ess.nodes++;
@@ -106,6 +125,16 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
         if (inCheck) return mated_in(ply);
         else return 0;
     }
+
+    FLAGS flag = FLAGS::EXACTBOUND;
+    if (bestScore >= beta) flag = FLAGS::LOWERBOUND;
+    else {
+        if (alpha != old_alpha) flag = FLAGS::EXACTBOUND;
+        else flag = FLAGS::UPPERBOUND;
+    }
+
+    if (!time) tt.StoreIndex(hash, depth, flag, bestScore, bestMove, ply);
+
     return bestScore;
 }
 
