@@ -29,4 +29,6 @@ struct EngineSearchStuff {
     chess::Move pvTable[MAX_PLY][MAX_PLY];
     uint64_t nodes = 0;
     int checks = CHECK_RATE;
+
+    chess::Move killerMoves[2][MAX_PLY];
 };

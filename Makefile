@@ -1,4 +1,4 @@
-helper = src/helpers/tests.cpp src/helpers/search/time.cpp src/helpers/search/values.cpp src/helpers/search/pv.cpp src/helpers/evaluation/score.cpp
+helper = src/helpers/tests.cpp src/helpers/search/time.cpp src/helpers/search/values.cpp src/helpers/search/pv.cpp src/helpers/search/heuristics.cpp src/helpers/evaluation/score.cpp
 
 uci = src/uci/position.cpp src/uci/loop.cpp
 uci_options = src/uci/options/spin.cpp src/uci/options/check.cpp
@@ -8,7 +8,7 @@ evaluation = src/engine/evaluation/evaluate.cpp
 
 source=src/main.cpp $(helper) $(uci) $(uci_options) $(search) $(evaluation)
 out=src/output/
-name=brain_dead_v0.004
+name=brain_dead_v0.005
 cmd=-std=c++26 -pthread -O3 -march=native -Wall
 
 ifeq ($(OS),Windows_NT)

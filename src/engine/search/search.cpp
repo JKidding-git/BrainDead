@@ -1,5 +1,6 @@
 #include "search.hpp"
 #include "../../helpers/misc.hpp"
+#include "../../helpers/search/heuristics.hpp"
 #include "../evaluation/evaluate.hpp"
 #include "move_picker.hpp"
 
@@ -17,7 +18,7 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
 
     chess::Movelist moves;
     chess::movegen::legalmoves<chess::movegen::MoveGenType::CAPTURE>(moves, board);
-    ScoreMoves<true>(board, moves);
+    ScoreMoves<true>(board, moves, ess, ply);
 
 
     for (int i = 0; i < moves.size(); ++i) {
@@ -72,7 +73,7 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
 
     chess::Movelist moves;
     chess::movegen::legalmoves(moves, board);
-    ScoreMoves<false>(board, moves);
+    ScoreMoves<false>(board, moves, ess, ply);
 
     for (int i = 0; i < moves.size(); ++i) {
         ess.nodes++;
@@ -92,6 +93,9 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
             if (score > alpha) {
                 alpha = score;
                 if (score >= beta) {
+                    if (!board.isCapture(move)) {
+                        AddKiller(move, ess, ply);
+                    }
                     break;
                 }
             }
