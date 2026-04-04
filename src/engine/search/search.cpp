@@ -122,7 +122,10 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
                         int to = move.to().index();
 
                         int history_score = (
-                            bonus - ess.history[side][from][to] * bonus / 16384 
+                            bonus
+                            - ess.history[side][from][to]
+                            * bonus
+                            / 16384 
                         );
 
                         ess.history[side][from][to] += history_score;
