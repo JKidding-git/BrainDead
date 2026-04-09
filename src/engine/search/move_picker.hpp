@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "../../helpers/search/controller.hpp"
 #include "tt.hpp"
+#include "see.hpp"
 
 
 
@@ -18,12 +19,16 @@ static constexpr int mvv_scores[6][6] = {
 };
 
 static constexpr int TT_BONUS = 1'000'000;
-static constexpr int CAPTURE_BONUS = 32'000;
+static constexpr int CAPTURE_BONUS = 100'000;
+static constexpr int BAD_CAPTURE_BONUS = -100'000;
+static constexpr int KILLER_BONUS_1 = 90'000;
+static constexpr int KILLER_BONUS_2 = 89'000;
 
 constexpr int mvv_lva(const chess::PieceType& attacker, const chess::PieceType& victim) {
     return mvv_scores[static_cast<int>(attacker)][static_cast<int>(victim)];
 }
 
+// TODO: change this to score individual moves instead of the whole move list at once.
 template <bool inQs>
 inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, EngineSearchStuff& ess, int ply, chess::Move ttMove) {
     for (int move_index = 0; move_index < moves.size(); move_index++) {
@@ -31,6 +36,9 @@ inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, Engine
             chess::Move& move = moves[move_index];
             chess::PieceType attacker = board.at(move.from()).type();
             chess::PieceType victim = board.at(move.to()).type();
+
+            int see_score = SEE(board, move.from(), move.to(), victim, attacker, board.sideToMove());
+            if (see_score < 0) continue;
 
             move.setScore(mvv_lva(attacker, victim));
         } else {
@@ -48,16 +56,23 @@ inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, Engine
                 chess::PieceType attacker = board.at(move.from()).type();
                 chess::PieceType victim = board.at(move.to()).type();
 
+                int see_score = SEE(board, move.from(), move.to(), victim, attacker, board.sideToMove());
+
+                if (see_score < 0) {
+                    move.setScore(BAD_CAPTURE_BONUS + see_score);
+                    continue;
+                }
+
                 move.setScore(CAPTURE_BONUS + mvv_lva(attacker, victim));
                 continue;
             } else {
 
                 // Killer moves
                 if (move == ess.killerMoves[0][ply]) {
-                    move.setScore(CAPTURE_BONUS + 5000);
+                    move.setScore(KILLER_BONUS_1);
                     continue;
                 } else if (move == ess.killerMoves[1][ply]) {
-                    move.setScore(CAPTURE_BONUS + 4999);
+                    move.setScore(KILLER_BONUS_2);
                     continue;
                 }
             }

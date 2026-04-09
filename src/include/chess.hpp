@@ -1174,7 +1174,7 @@ class attacks {
      * @param square Attacked Square
      * @return
      */
-    [[nodiscard]] static Bitboard attackers(const Board& board, Color color, Square square) noexcept;
+    [[nodiscard]] static Bitboard attackers(const Board& board, Color color, Square square, const Bitboard occupied) noexcept;
 
     /**
      * @brief Returns the slider attacks for a given square
@@ -3625,9 +3625,9 @@ template <Color::underlying c>
 
 [[nodiscard]] inline Bitboard attacks::king(Square sq) noexcept { return KingAttacks[sq.index()]; }
 
-[[nodiscard]] inline Bitboard attacks::attackers(const Board& board, Color color, Square square) noexcept {
+[[nodiscard]] inline Bitboard attacks::attackers(const Board& board, Color color, Square square, const Bitboard occupied) noexcept {
     const auto queens   = board.pieces(PieceType::QUEEN, color);
-    const auto occupied = board.occ();
+    // const auto occupied = board.occ();
 
     // using the fact that if we can attack PieceType from square, they can attack us back
     auto atks = (pawn(~color, square) & board.pieces(PieceType::PAWN, color));
