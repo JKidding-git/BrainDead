@@ -20,7 +20,7 @@ void UCIPosition(words_vector& word, UCIController& uci_controller, chess::Board
     if (word[start_of_moves_index] == "moves") {
 
         // Loop through moves
-        for (int moves_index = start_of_moves_index + 1; moves_index < word.size(); moves_index++) {
+        for (std::size_t moves_index = static_cast<std::size_t>(start_of_moves_index) + 1; moves_index < word.size(); ++moves_index) {
             if (uci_controller.debug) FlushPrint("info string move got: \"" + word[moves_index] + "\"\n");
 
             chess::Move move = chess::uci::uciToMove(board, word[moves_index]);

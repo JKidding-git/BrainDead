@@ -6,7 +6,8 @@ bool checkTime(bool iter, EngineController& ec, EngineSearchStuff& ess, clk t0) 
         return true;
     }
 
-    if (Load(ec.max_nodes) > 0 && ess.nodes >= Load(ec.max_nodes)) {
+    const int max_nodes = Load(ec.max_nodes);
+    if (max_nodes > 0 && ess.nodes >= static_cast<uint64_t>(max_nodes)) {
         StopSearch(ec);
         return true;
     }
@@ -19,7 +20,8 @@ bool checkTime(bool iter, EngineController& ec, EngineSearchStuff& ess, clk t0) 
 
     ess.checks = CHECK_RATE;
 
-    if (Load(ec.time) == 0) {
+    const int time_limit_ms = Load(ec.time);
+    if (time_limit_ms <= 0) {
         KeepSearchRunning(ec);
         return false;
     }
@@ -27,7 +29,7 @@ bool checkTime(bool iter, EngineController& ec, EngineSearchStuff& ess, clk t0) 
     clk now = std::chrono::steady_clock::now();
     uint64_t timeNow = std::chrono::duration_cast<std::chrono::nanoseconds>(now - t0).count();
 
-    if (timeNow / 1'000'000 > Load(ec.time)) {
+    if (timeNow / 1'000'000 > static_cast<uint64_t>(time_limit_ms)) {
         StopSearch(ec);
         return true;
     }
