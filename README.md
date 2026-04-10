@@ -18,6 +18,10 @@ BrainDead has ~~a lot~~ a small number of configuration options, most [GUI](http
 ### move_overhead
 The time buffer when playing games under time constraints. If you notice any time losses you should increase the move overhead. It caps out at 5000 milliseconds, which is 5 seconds.
 
+### hash_mb
+The amount of memory allocated to the transposition table, in megabytes. The more memory you allocate, the better the engine will perform, but it will also use more RAM.
+
+
 ## Special Thanks
 - [**Chess Programming Wiki**](https://www.chessprogramming.org/Main_Page) - This is literally where most if not ALL of my knowledge of engine development comes from.
 - [**chess-library**](https://github.com/Disservin/chess-library) - A fast c++ chess library.
