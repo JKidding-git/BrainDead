@@ -11,11 +11,14 @@ source = src/main.cpp $(helper) $(uci) $(uci_options) $(search) $(evaluation)
 out = src/output/
 name = brain_dead_v0.007
 cmd = -std=c++26 -pthread -O3 -march=native -Wall
-pch = src/include/chess.hpp.gch
+headers = $(shell find src -name '*.hpp' -type f | sort)
+pch = $(headers:.hpp=.hpp.gch)
 
 
-pre:
-	g++ $(cmd) -x c++-header src/include/chess.hpp -o $(pch)
+pre: $(pch)
+
+%.hpp.gch: %.hpp
+	g++ $(cmd) -x c++-header $< -o $@
 
 all: pre
-	g++ $(cmd) -Winvalid-pch -I src/include $(source) -o $(out)$(name)
+	g++ $(cmd) -Winvalid-pch $(source) -o $(out)$(name)
