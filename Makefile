@@ -11,17 +11,5 @@ out=src/output/
 name=brain_dead_v0.007
 cmd=-std=c++26 -pthread -O3 -march=native -Wall
 
-ifeq ($(OS),Windows_NT)
-	name := $(name).exe
-else
-	UNAME_S := $(shell uname -s)
-	ifeq ($(UNAME_S),Linux)
-		name := $(name)
-	endif
-	ifeq ($(UNAME_S),Darwin)
-		name := $(name)
-	endif
-endif
-
 all:
 	g++ $(cmd) $(source) -o $(out)$(name)
