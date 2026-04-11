@@ -86,9 +86,24 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
         if (alpha >= beta) return tt_score;
     }
 
+    bool inCheck = board.inCheck();
+
+    // Null Move Pruning
+    if (depth >= 3 && !inCheck) {
+        board.makeNullMove();
+        int score = -alphaBeta(board, -beta, -beta + 1, depth - 2, ply + 1, ess, ec, t0);
+        board.unmakeNullMove();
+
+        if (score >= beta) {
+            if (score >= VALUE_TB_WIN_IN_MAX_PLY) score = beta;
+
+            return score;
+        }
+
+    }
+
     int bestScore = -VALUE_INFINITE;
     chess::Move bestMove = chess::Move::NULL_MOVE;
-    bool inCheck = board.inCheck();
     int old_alpha = alpha;
 
     chess::Movelist moves;
