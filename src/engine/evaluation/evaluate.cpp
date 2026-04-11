@@ -3,6 +3,8 @@
 #include "../../helpers/evaluation/psqt.hpp"
 #include "../../helpers/evaluation/passer.hpp"
 #include "../../helpers/evaluation/isolated.hpp"
+#include "../../helpers/evaluation/backward.hpp"
+
 
 static constexpr chess::PieceType pts[6] = {chess::PieceType::PAWN, chess::PieceType::KNIGHT, chess::PieceType::BISHOP, chess::PieceType::ROOK, chess::PieceType::QUEEN, chess::PieceType::KING};
 
@@ -10,6 +12,20 @@ static constexpr chess::PieceType pts[6] = {chess::PieceType::PAWN, chess::Piece
 static constexpr score piece_values[6] = {S(100, 100), S(325, 325), S(350, 350), S(500, 500), S(900, 900), S(0, 0)};
 static constexpr score passer_bonuses[8] = {S(0, 0), S(15, 15), S(15, 15), S(30, 30), S(50, 50), S(80, 80), S(120, 120), S(0, 0)};
 static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-10, -10), S(-25, -25), S(-50, -50), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75)};
+static constexpr score backward_pawn_penalty = S(-2, -3);
+
+score eval_backward_pawns(const chess::Board& board, chess::Color color) {
+    score value = S(0, 0);
+    chess::Bitboard backward_pawns = GetAllBackwardPawns(board, color);
+
+    // No backward pawns, no penalty
+    if (!backward_pawns.getBits()) return value;
+
+    int count = backward_pawns.count();
+    value += backward_pawn_penalty * count;
+
+    return value;
+}
 
 score eval_isolated_pawns(const chess::Board& board, chess::Color color) {
     score value = S(0, 0);
