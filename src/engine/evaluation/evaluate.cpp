@@ -4,6 +4,7 @@
 #include "../../helpers/evaluation/passer.hpp"
 #include "../../helpers/evaluation/isolated.hpp"
 #include "../../helpers/evaluation/backward.hpp"
+#include "../../helpers/evaluation/king_shield.hpp"
 
 
 static constexpr chess::PieceType pts[6] = {chess::PieceType::PAWN, chess::PieceType::KNIGHT, chess::PieceType::BISHOP, chess::PieceType::ROOK, chess::PieceType::QUEEN, chess::PieceType::KING};
@@ -13,6 +14,27 @@ static constexpr score piece_values[6] = {S(100, 100), S(325, 325), S(350, 350),
 static constexpr score passer_bonuses[8] = {S(0, 0), S(15, 15), S(15, 15), S(30, 30), S(50, 50), S(80, 80), S(120, 120), S(0, 0)};
 static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-10, -10), S(-25, -25), S(-50, -50), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75)};
 static constexpr score backward_pawn_penalty = S(-10, -15);
+static constexpr score king_pawn_shield_bonus = S(10, -20);
+
+score eval_king_shield(const chess::Board& board, chess::Color color) {
+    score value = S(0, 0);
+    chess::Square king_sq = board.kingSq(color);
+    chess::Bitboard king_sq_bit = chess::Bitboard::fromSquare(king_sq);
+    chess::Bitboard castling_squares = GetCastlingSquares(color);
+    chess::Bitboard pawns = board.pieces(chess::PieceType::PAWN, color);
+
+    // If the king is not castled, skip the king shield evaluation, since it's not relevant
+    if (!(castling_squares & king_sq_bit)) return value;
+    if (!pawns.getBits()) return value;
+
+    chess::Bitboard shield_mask = GenerateKingShieldMask(king_sq_bit, color);
+    int count = (shield_mask & pawns).count();
+    int pawns_should_have_at_most_three = std::min(3, count);
+
+    value += king_pawn_shield_bonus * pawns_should_have_at_most_three;
+
+    return value;
+}
 
 score eval_backward_pawns(const chess::Board& board, chess::Color color) {
     score value = S(0, 0);
@@ -106,6 +128,7 @@ score eval_colors(const chess::Board& board) {
     value += eval_piece(board, chess::Color::WHITE) - eval_piece(board,chess::Color::BLACK);
     value += psqt_eval(board, chess::Color::WHITE) - psqt_eval(board, chess::Color::BLACK);
     value += eval_passers(board, chess::Color::WHITE) - eval_passers(board, chess::Color::BLACK);
+    value += eval_king_shield(board, chess::Color::WHITE) - eval_king_shield(board, chess::Color::BLACK);
 
     // Penalties
     value += eval_isolated_pawns(board, chess::Color::WHITE) - eval_isolated_pawns(board, chess::Color::BLACK);
