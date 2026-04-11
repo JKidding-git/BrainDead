@@ -1,0 +1,36 @@
+This file is just for keeping track of progress.
+
+SEARCH:
+- Quiescence search
+- Alpha-Beta search
+- Iterative Deepening
+- Time control checking
+- Repetition detection
+- Half-move draw detection
+- Mate distance pruning
+- Transposition table probing and storage
+- Null move pruning
+- Killer move tracking
+- History heuristic
+- Principal Variation (PV) tracking
+- Node counting
+- Mating detection
+
+MOVE PICKER:
+- MVV-LVA (Most Valuable Victim - Least Valuable Attacker) scoring
+- Transposition table move bonus
+- Capture scoring with SEE
+- Bad capture filtering
+- Killer move bonuses
+- History heuristic scoring
+- Static Exchange Evaluation (SEE) filtering
+- Selection-sort move picking
+
+EVALUATION:
+- Piece material evaluation
+- Piece-square table (PSQT) positional bonuses
+- Passed pawn bonuses by rank
+- King pawn shield bonuses
+- Isolated pawn penalties
+- Backward pawn penalties
+- Game phase blending (midgame to endgame transition)
