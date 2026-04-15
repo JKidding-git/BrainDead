@@ -6,9 +6,9 @@
 
 std::string convert_score(int score) {
     if (score >= VALUE_MATE_IN_PLY) {
-        return "mate " + std::to_string(int((floor((VALUE_MATE - score) / 2)) + ((VALUE_MATE - score) & 1)));
+        return "mate " + std::to_string(((VALUE_MATE - score) / 2) + ((VALUE_MATE - score) & 1));
     } else if (score <= VALUE_MATED_IN_PLY) {
-        return "mate " + std::to_string(int(-(floor((VALUE_MATE - score) / 2)) + ((VALUE_MATE - score) & 1)));
+        return "mate " + std::to_string(-((VALUE_MATE + score) / 2) + ((VALUE_MATE + score) & 1));
     } else {
         return "cp " + std::to_string(score);
     }

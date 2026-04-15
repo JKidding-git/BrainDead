@@ -5,6 +5,7 @@
 #include "../../helpers/evaluation/isolated.hpp"
 #include "../../helpers/evaluation/backward.hpp"
 #include "../../helpers/evaluation/king_shield.hpp"
+#include "../../helpers/evaluation/unsafe_squares.hpp"
 
 
 static constexpr chess::PieceType pts[6] = {chess::PieceType::PAWN, chess::PieceType::KNIGHT, chess::PieceType::BISHOP, chess::PieceType::ROOK, chess::PieceType::QUEEN, chess::PieceType::KING};
@@ -15,6 +16,20 @@ static constexpr score passer_bonuses[8] = {S(0, 0), S(15, 15), S(15, 15), S(30,
 static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-10, -10), S(-25, -25), S(-50, -50), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75)};
 static constexpr score backward_pawn_penalty = S(-10, -15);
 static constexpr score king_pawn_shield_bonus = S(10, -20);
+static constexpr score unsafe_square_penalty = S(-10, -5);
+
+score eval_unsafe_squares(const chess::Board& board, chess::Color color) {
+    score value = S(0, 0);
+    chess::Bitboard unsafe_squares = GetAllKingUnsafeSquares(board, color);
+
+    // No unsafe squares, no penalty
+    if (!unsafe_squares.getBits()) return value;
+
+    int count = unsafe_squares.count();
+    value += unsafe_square_penalty * count;
+
+    return value;
+}
 
 score eval_king_shield(const chess::Board& board, chess::Color color) {
     score value = S(0, 0);
@@ -121,18 +136,34 @@ score psqt_eval(const chess::Board& board, const chess::Color color) {
     return value;
 }
 
+
+score eval_king_safety(const chess::Board& board, chess::Color color) {
+    score value = S(0, 0);
+
+    value += eval_unsafe_squares(board, color);
+    value += eval_king_shield(board, color);
+
+    return value;
+}
+
+score eval_pawn_structure(const chess::Board& board, chess::Color color) {
+    score value = S(0, 0);
+
+    value += eval_passers(board, color);
+    value += eval_isolated_pawns(board, color);
+    value += eval_backward_pawns(board, color);
+
+    return value;
+}
+
 score eval_colors(const chess::Board& board) {
     score value = S(0, 0);
 
-    // Bonuses
     value += eval_piece(board, chess::Color::WHITE) - eval_piece(board,chess::Color::BLACK);
     value += psqt_eval(board, chess::Color::WHITE) - psqt_eval(board, chess::Color::BLACK);
-    value += eval_passers(board, chess::Color::WHITE) - eval_passers(board, chess::Color::BLACK);
-    value += eval_king_shield(board, chess::Color::WHITE) - eval_king_shield(board, chess::Color::BLACK);
 
-    // Penalties
-    value += eval_isolated_pawns(board, chess::Color::WHITE) - eval_isolated_pawns(board, chess::Color::BLACK);
-    value += eval_backward_pawns(board, chess::Color::WHITE) - eval_backward_pawns(board, chess::Color::BLACK);
+    value += eval_king_safety(board, chess::Color::WHITE) - eval_king_safety(board, chess::Color::BLACK);
+    value += eval_pawn_structure(board, chess::Color::WHITE) - eval_pawn_structure(board, chess::Color::BLACK);
 
     return value;
 }
