@@ -79,8 +79,8 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
     else tt_score = VALUE_NONE;
 
     if (!RootNode && tte.depth >= depth && tt_hit) {
-        if (tte.flag == FLAGS::LOWERBOUND) alpha = std::max(alpha, tt_score);
-        else if (tte.flag == FLAGS::UPPERBOUND) beta = std::min(beta, tt_score);
+        if (tte.flag == static_cast<uint8_t>(FLAGS::LOWERBOUND)) alpha = std::max(alpha, tt_score);
+        else if (tte.flag == static_cast<uint8_t>(FLAGS::UPPERBOUND)) beta = std::min(beta, tt_score);
 
 
         if (alpha >= beta) return tt_score;

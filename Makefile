@@ -9,7 +9,7 @@ evaluation = src/engine/evaluation/evaluate.cpp
 source = src/main.cpp $(helper) $(uci) $(uci_options) $(search) $(evaluation)
 
 out = src/output/
-name = brain_dead_v0.012
+name = brain_dead_v0.013
 cmd = -std=c++26 -pthread -O3 -march=native -Wall
 headers = $(shell find src -name '*.hpp' -type f | sort)
 pch = $(headers:.hpp=.hpp.gch)
@@ -22,3 +22,6 @@ pre: $(pch)
 
 all: pre
 	g++ $(cmd) -Winvalid-pch $(source) -o $(out)$(name)
+
+clean:
+	rm -f $(pch) $(out)$(name)

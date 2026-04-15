@@ -1274,7 +1274,7 @@ class Move {
      */
     constexpr void setScore(std::int32_t score) noexcept { score_ = score; }
 
-    [[nodiscard]] constexpr std::uint16_t move() const noexcept { return move_; }
+    [[nodiscard]] constexpr std::uint16_t getMoveNum() const noexcept { return move_; }
     [[nodiscard]] constexpr std::int32_t score() const noexcept { return score_; }
 
     constexpr bool operator==(const Move& rhs) const noexcept { return move_ == rhs.move_; }

@@ -15,10 +15,10 @@ enum class FLAGS{
 
 struct TTEntry {
     uint64_t key     = 0;
-    uint8_t depth    = 0;
-    FLAGS flag       = FLAGS::NONEBOUND;
     int32_t score    = VALUE_NONE;
-    chess::Move move = chess::Move::NULL_MOVE;
+    uint16_t move = chess::Move::NULL_MOVE;
+    uint8_t depth    = 0;
+    uint8_t flag     = static_cast<uint8_t>(FLAGS::NONEBOUND);
 };
 
 class TranspositionTable {
@@ -83,15 +83,14 @@ public:
         size_t index = Index(key);
         auto& entry = table[index];
 
-        if (entry.key != key || entry.move != move) {
-            entry.move = move;
-        }
+        if (entry.key != key || entry.move != move.getMoveNum()) entry.move = move.getMoveNum();
 
-        if (entry.key != key || flag == FLAGS::EXACTBOUND || depth + 4 > entry.depth) {
-            entry.key = key;
+        if (entry.key != key || flag == FLAGS::EXACTBOUND || depth + 4 > entry.depth || entry.move != move.getMoveNum()) {
+            entry.key   = key;
             entry.depth = depth;
-            entry.flag = flag;
+            entry.flag  = static_cast<uint8_t>(flag);
             entry.score = ScoreToTT(score, ply);
+            entry.move  = move.getMoveNum();
         }
     }
 
