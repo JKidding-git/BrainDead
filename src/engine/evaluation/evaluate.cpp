@@ -17,6 +17,16 @@ static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-10, -10), S(-25, 
 static constexpr score backward_pawn_penalty = S(-10, -15);
 static constexpr score king_pawn_shield_bonus = S(10, -20);
 static constexpr score unsafe_square_penalty = S(-10, -5);
+inline constexpr score bishop_pair_bonus = S(30, 20);
+
+score eval_bishop_pair(const chess::Board& board, chess::Color color) {
+    score value = S(0, 0);
+    chess::Bitboard bishops = board.pieces(chess::PieceType::BISHOP, color);
+
+    if (bishops.count() >= 2) value += bishop_pair_bonus;
+
+    return value;
+}
 
 score eval_unsafe_squares(const chess::Board& board, chess::Color color) {
     score value = S(0, 0);
@@ -161,6 +171,7 @@ score eval_colors(const chess::Board& board) {
 
     value += eval_piece(board, chess::Color::WHITE) - eval_piece(board,chess::Color::BLACK);
     value += psqt_eval(board, chess::Color::WHITE) - psqt_eval(board, chess::Color::BLACK);
+    value += eval_bishop_pair(board, chess::Color::WHITE) - eval_bishop_pair(board, chess::Color::BLACK);
 
     value += eval_king_safety(board, chess::Color::WHITE) - eval_king_safety(board, chess::Color::BLACK);
     value += eval_pawn_structure(board, chess::Color::WHITE) - eval_pawn_structure(board, chess::Color::BLACK);

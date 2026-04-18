@@ -35,3 +35,4 @@ EVALUATION:
 - Backward pawn penalties
 - Game phase blending (midgame to endgame transition)
 - King unsafe squares (squares that can potentially be checked.)
+- Bishop pair bonus
