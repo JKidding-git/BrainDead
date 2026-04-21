@@ -10,14 +10,15 @@
 
 static constexpr chess::PieceType pts[6] = {chess::PieceType::PAWN, chess::PieceType::KNIGHT, chess::PieceType::BISHOP, chess::PieceType::ROOK, chess::PieceType::QUEEN, chess::PieceType::KING};
 
-// Untuned values.
-static constexpr score piece_values[6] = {S(100, 100), S(325, 325), S(350, 350), S(500, 500), S(900, 900), S(0, 0)};
-static constexpr score passer_bonuses[8] = {S(0, 0), S(15, 15), S(15, 15), S(30, 30), S(50, 50), S(80, 80), S(120, 120), S(0, 0)};
-static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-10, -10), S(-25, -25), S(-50, -50), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75), S(-75, -75)};
-static constexpr score backward_pawn_penalty = S(-10, -15);
-static constexpr score king_pawn_shield_bonus = S(10, -20);
-static constexpr score unsafe_square_penalty = S(-10, -5);
-inline constexpr score bishop_pair_bonus = S(30, 20);
+// these values are now tuned
+// yayyyy!
+static constexpr score piece_values[6] = {S(205, 181), S(707, 582), S(736, 641), S(971, 945), S(1808, 1712), S(0, 0)};
+static constexpr score passer_bonuses[8] = {S(0, 0), S(28, 26), S(12, 35), S(15, 82), S(59, 138), S(97, 264), S(215, 301), S(0, 0)};
+static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-27, -26), S(-51, -60), S(-93, -103), S(-133, -146), S(-141, -190), S(-150, -189), S(-199, -204), S(-75, -75)};
+static constexpr score backward_pawn_penalty[9] = {S(0, 0), S(-34, -16), S(-50, -15), S(-59, -20), S(-74, -18), S(-93, -1), S(-131, 28), S(9, -168), S(-10, -15)};
+static constexpr score king_pawn_shield_bonus[4] = {S(0, 0), S(47, -23), S(53, -12), S(48, -5)};
+static constexpr score unsafe_square_penalty = S(-32, -3);
+static constexpr score bishop_pair_bonus = S(79, 90);
 
 
 
@@ -68,10 +69,10 @@ score eval_king_shield(const chess::Board& board, chess::Color color, Trace& tra
     int pawns_should_have_at_most_three = std::min(3, count);
 
     #ifdef TUNE
-        trace.king_pawn_shield_bonus[static_cast<bool>(color)] += pawns_should_have_at_most_three;
+        trace.king_pawn_shield_bonus[pawns_should_have_at_most_three][static_cast<bool>(color)]++;
     #endif
 
-    value += king_pawn_shield_bonus * pawns_should_have_at_most_three;
+    value += king_pawn_shield_bonus[pawns_should_have_at_most_three];
 
     return value;
 }
@@ -86,10 +87,10 @@ score eval_backward_pawns(const chess::Board& board, chess::Color color, Trace& 
     int count = backward_pawns.count();
 
     #ifdef TUNE
-        trace.backward_pawn_penalty[static_cast<bool>(color)] += count;
+        trace.backward_pawn_penalty[count][static_cast<bool>(color)]++;
     #endif
 
-    value += backward_pawn_penalty * count;
+    value += backward_pawn_penalty[count];
     return value;
 }
 
