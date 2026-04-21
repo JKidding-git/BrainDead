@@ -21,11 +21,11 @@ After installing g++, run ```make``` and the [chess engine](https://en.wikipedia
 
 BrainDead has ~~a lot~~ a small number of configuration options, most [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface) should support some ways to set each option. If they do not, then refer to the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) specification.
 
-### move_overhead
+### MoveOverhead
 
 The time buffer when playing games under time constraints. If you notice any time losses you should increase the move overhead. It caps out at 5000 milliseconds, which is 5 seconds.
 
-### hash_mb
+### Hash
 
 The amount of memory allocated to the transposition table, in megabytes. The more memory you allocate, the better the engine will perform, but it will also use more RAM.
 

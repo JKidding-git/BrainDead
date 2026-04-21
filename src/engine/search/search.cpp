@@ -1,7 +1,6 @@
 #include "search.hpp"
 #include "../../helpers/misc.hpp"
 #include "../../helpers/search/heuristics.hpp"
-#include "../evaluation/evaluate.hpp"
 #include "move_picker.hpp"
 
 
@@ -10,11 +9,11 @@ static constexpr int bonus_squared[MAX_PLY] = {1, 4, 9, 16, 25, 36, 49, 64, 81, 
 
 
 
-int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0) {
+int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0, Trace& trace) {
     if (!(Load(ec.is_running)) || checkTime(false, ec, ess, t0)) return 0;
-    if (ply >= MAX_PLY) return evaluate(board);
+    if (ply >= MAX_PLY) return evaluate(board, trace);
 
-    int32_t bestValue = evaluate(board);
+    int32_t bestValue = evaluate(board, trace);
     if (bestValue >= beta) return bestValue;
     if (bestValue > alpha) alpha = bestValue;
 
@@ -30,7 +29,7 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
         chess::Move move = moves[i];
 
         board.makeMove(move);
-        int score = -qSearch(board, -beta, -alpha, ply + 1, ess, ec, t0);
+        int score = -qSearch(board, -beta, -alpha, ply + 1, ess, ec, t0, trace);
         board.unmakeMove(move);
 
         if (score > bestValue) {
@@ -45,10 +44,10 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
     return bestValue;
 }
 
-int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0) {
+int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0, Trace& trace) {
     bool time = checkTime(false, ec, ess, t0);
     if (time) return 0;
-    if (ply >= MAX_PLY) return evaluate(board);
+    if (ply >= MAX_PLY) return evaluate(board, trace);
 
     
     ess.pvLength[ply] = ply;
@@ -68,7 +67,7 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
         if (alpha >= beta) return alpha;
     }
 
-    if (depth <= 0) return qSearch(board, alpha, beta, ply, ess, ec, t0);
+    if (depth <= 0) return qSearch(board, alpha, beta, ply, ess, ec, t0, trace);
 
     TTEntry tte = tt.ProbeEntry(hash);
     bool tt_hit = tte.key == hash;
@@ -91,7 +90,7 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
     // Null Move Pruning
     if (depth >= 3 && !inCheck) {
         board.makeNullMove();
-        int score = -alphaBeta(board, -beta, -beta + 1, depth - 2, ply + 1, ess, ec, t0);
+        int score = -alphaBeta(board, -beta, -beta + 1, depth - 2, ply + 1, ess, ec, t0, trace);
         board.unmakeNullMove();
 
         if (score >= beta) {
@@ -117,7 +116,7 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
         chess::Move move = moves[i];
 
         board.makeMove(move);
-        int score = -alphaBeta(board, -beta, -alpha, depth - 1, ply + 1, ess, ec, t0);
+        int score = -alphaBeta(board, -beta, -alpha, depth - 1, ply + 1, ess, ec, t0, trace);
         board.unmakeMove(move);
 
         if (score > bestScore) {
@@ -184,7 +183,9 @@ void IterativeDeepening(chess::Board& board, EngineSearchStuff& ess, EngineContr
 
     for (int d = 1; d <= maxDepth; ++d) {
         ResetHistory(ess);
-        score = alphaBeta(board, -VALUE_INFINITE, VALUE_INFINITE, d, 0, ess, ec, t0);
+
+        Trace trace{}; // Reset on each iter since it's only used for tuning.
+        score = alphaBeta(board, -VALUE_INFINITE, VALUE_INFINITE, d, 0, ess, ec, t0, trace);
 
         if (!(Load(ec.is_running)) || checkTime(true, ec, ess, t0)) break;
 

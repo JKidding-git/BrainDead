@@ -26,7 +26,7 @@ class TranspositionTable {
 
     static size_t HashMbOrDefault() {
         constexpr size_t default_hash_mb = 16;
-        auto it = spin_entries.find("hash_mb");
+        auto it = spin_entries.find("Hash");
         if (it == spin_entries.end()) return default_hash_mb;
 
         int configured_hash_mb = it->second.default_value;

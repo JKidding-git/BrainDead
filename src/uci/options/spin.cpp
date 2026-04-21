@@ -40,7 +40,7 @@ void ChangeSpin(const std::string& name, int new_value, umap_spin& entries) {
     // Overwrite the entry's default value.
     entries[name].default_value = new_value;
 
-    if (name == "hash_mb") {
+    if (name == "Hash") {
         tt.resize();
     }
 }

@@ -19,16 +19,22 @@ static constexpr score king_pawn_shield_bonus = S(10, -20);
 static constexpr score unsafe_square_penalty = S(-10, -5);
 inline constexpr score bishop_pair_bonus = S(30, 20);
 
-score eval_bishop_pair(const chess::Board& board, chess::Color color) {
+
+
+score eval_bishop_pair(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
     chess::Bitboard bishops = board.pieces(chess::PieceType::BISHOP, color);
+
+    #ifdef TUNE
+        if (bishops.count() >= 2) trace.bishop_pair_bonus[static_cast<bool>(color)]++;
+    #endif
 
     if (bishops.count() >= 2) value += bishop_pair_bonus;
 
     return value;
 }
 
-score eval_unsafe_squares(const chess::Board& board, chess::Color color) {
+score eval_unsafe_squares(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
     chess::Bitboard unsafe_squares = GetAllKingUnsafeSquares(board, color);
 
@@ -36,12 +42,17 @@ score eval_unsafe_squares(const chess::Board& board, chess::Color color) {
     if (!unsafe_squares.getBits()) return value;
 
     int count = unsafe_squares.count();
+
+    #ifdef TUNE
+        trace.unsafe_square_penalty[static_cast<bool>(color)] += count;
+    #endif
+
     value += unsafe_square_penalty * count;
 
     return value;
 }
 
-score eval_king_shield(const chess::Board& board, chess::Color color) {
+score eval_king_shield(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
     chess::Square king_sq = board.kingSq(color);
     chess::Bitboard king_sq_bit = chess::Bitboard::fromSquare(king_sq);
@@ -56,12 +67,16 @@ score eval_king_shield(const chess::Board& board, chess::Color color) {
     int count = (shield_mask & pawns).count();
     int pawns_should_have_at_most_three = std::min(3, count);
 
+    #ifdef TUNE
+        trace.king_pawn_shield_bonus[static_cast<bool>(color)] += pawns_should_have_at_most_three;
+    #endif
+
     value += king_pawn_shield_bonus * pawns_should_have_at_most_three;
 
     return value;
 }
 
-score eval_backward_pawns(const chess::Board& board, chess::Color color) {
+score eval_backward_pawns(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
     chess::Bitboard backward_pawns = GetAllBackwardPawns(board, color);
 
@@ -69,12 +84,16 @@ score eval_backward_pawns(const chess::Board& board, chess::Color color) {
     if (!backward_pawns.getBits()) return value;
 
     int count = backward_pawns.count();
-    value += backward_pawn_penalty * count;
 
+    #ifdef TUNE
+        trace.backward_pawn_penalty[static_cast<bool>(color)] += count;
+    #endif
+
+    value += backward_pawn_penalty * count;
     return value;
 }
 
-score eval_isolated_pawns(const chess::Board& board, chess::Color color) {
+score eval_isolated_pawns(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
     chess::Bitboard isolated_pawns = GetAllIsolatedPawns(board, color);
 
@@ -82,12 +101,17 @@ score eval_isolated_pawns(const chess::Board& board, chess::Color color) {
     if (!isolated_pawns.getBits()) return value;
 
     int count = isolated_pawns.count();
+
+    #ifdef TUNE
+        trace.isolated_pawn_penalty[count][static_cast<bool>(color)]++;
+    #endif
+
     value += isolated_pawn_penalty[count];
 
     return value;
 }
 
-score eval_passers(const chess::Board& board, chess::Color color) {
+score eval_passers(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
     chess::Bitboard passers = GetAllPassers(board, color);
 
@@ -101,13 +125,17 @@ score eval_passers(const chess::Board& board, chess::Color color) {
         chess::Square sq = passers.pop();
         int rank = sq.rank();
 
+        #ifdef TUNE
+            trace.passer_bonuses[rank ^ rank_reduction][static_cast<bool>(color)]++;
+        #endif
+
         value += passer_bonuses[rank ^ rank_reduction];
     }
 
     return value;
 }
 
-score eval_piece(const chess::Board& board, const chess::Color color) {
+score eval_piece(const chess::Board& board, const chess::Color color, Trace& trace) {
     score value = S(0, 0);
     for (auto piece_types : pts) {
         chess::Bitboard pieces = board.pieces(piece_types, color);
@@ -118,13 +146,17 @@ score eval_piece(const chess::Board& board, const chess::Color color) {
         int p_index = int(piece_types);
         int count = pieces.count();
 
+        #ifdef TUNE
+            trace.piece_values[p_index][static_cast<bool>(color)] += count;
+        #endif
+
         value += piece_values[p_index] * count;
     }
 
     return value;
 }
 
-score psqt_eval(const chess::Board& board, const chess::Color color) {
+score psqt_eval(const chess::Board& board, const chess::Color color, Trace& trace) {
     score value = S(0, 0);
 
     // Impossible to skip, since we need to have at least two kings
@@ -132,57 +164,59 @@ score psqt_eval(const chess::Board& board, const chess::Color color) {
     chess::Bitboard pieces = board.us(color);
 
     while (pieces) {
-        uint8_t sq = pieces.pop();
+        chess::Square sq = pieces.pop();
         chess::PieceType pt = board.at(sq).type();
         int p_index = int(pt);
 
-        if (color == chess::Color::WHITE) {
-            value += psqt[p_index][sq^56];
-        } else {
-            value += psqt[p_index][sq];
-        }
+        int square_relative = sq.relative_square(color).index();
+
+        #ifdef TUNE
+            trace.psqt[p_index][square_relative][static_cast<bool>(color)]++;
+        #endif
+
+        value += psqt[p_index][square_relative];
     }
 
     return value;
 }
 
 
-score eval_king_safety(const chess::Board& board, chess::Color color) {
+score eval_king_safety(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
 
-    value += eval_unsafe_squares(board, color);
-    value += eval_king_shield(board, color);
+    value += eval_unsafe_squares(board, color, trace);
+    value += eval_king_shield(board, color, trace);
 
     return value;
 }
 
-score eval_pawn_structure(const chess::Board& board, chess::Color color) {
+score eval_pawn_structure(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
 
-    value += eval_passers(board, color);
-    value += eval_isolated_pawns(board, color);
-    value += eval_backward_pawns(board, color);
+    value += eval_passers(board, color, trace);
+    value += eval_isolated_pawns(board, color, trace);
+    value += eval_backward_pawns(board, color, trace);
 
     return value;
 }
 
-score eval_colors(const chess::Board& board) {
+score eval_colors(const chess::Board& board, Trace& trace) {
     score value = S(0, 0);
 
-    value += eval_piece(board, chess::Color::WHITE) - eval_piece(board,chess::Color::BLACK);
-    value += psqt_eval(board, chess::Color::WHITE) - psqt_eval(board, chess::Color::BLACK);
-    value += eval_bishop_pair(board, chess::Color::WHITE) - eval_bishop_pair(board, chess::Color::BLACK);
+    value += eval_piece(board, chess::Color::WHITE, trace) - eval_piece(board, chess::Color::BLACK, trace);
+    value += psqt_eval(board, chess::Color::WHITE, trace) - psqt_eval(board, chess::Color::BLACK, trace);
+    value += eval_bishop_pair(board, chess::Color::WHITE, trace) - eval_bishop_pair(board, chess::Color::BLACK, trace);
 
-    value += eval_king_safety(board, chess::Color::WHITE) - eval_king_safety(board, chess::Color::BLACK);
-    value += eval_pawn_structure(board, chess::Color::WHITE) - eval_pawn_structure(board, chess::Color::BLACK);
+    value += eval_king_safety(board, chess::Color::WHITE, trace) - eval_king_safety(board, chess::Color::BLACK, trace);
+    value += eval_pawn_structure(board, chess::Color::WHITE, trace) - eval_pawn_structure(board, chess::Color::BLACK, trace);
 
     return value;
 }
 
-int evaluate(const chess::Board& board) {
+int evaluate(const chess::Board& board, Trace& trace) {
     bool stm = board.sideToMove() == chess::Color::WHITE;
 
-    score value = eval_colors(board);
+    score value = eval_colors(board, trace);
     int out = Blend(board, value);
 
     return out * (stm ? 1 : -1);

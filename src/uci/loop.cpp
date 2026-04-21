@@ -40,7 +40,7 @@ void Init(UCIGoTimeController& uci_go_time_controller) {
 
 int GetTime(UCIController& uci_controller, UCIGoTimeController& uci_go_time_controller, EngineController& engine_controller, chess::Board& board) {
     int mtg = 24;
-    int move_overhead = spin_entries["move_overhead"].default_value;
+    int move_overhead = spin_entries["MoveOverhead"].default_value;
 
     if (uci_go_time_controller.moves_to_go > 0) {
         mtg = uci_go_time_controller.moves_to_go + 2;
@@ -145,8 +145,8 @@ void UCILoop() {
     EngineSearchStuff ess;
 
 
-    AddSpin("move_overhead", 50, 0, 5000, spin_entries);
-    AddSpin("hash_mb", 16, 1, 1024*16, spin_entries);
+    AddSpin("MoveOverhead", 50, 0, 5000, spin_entries);
+    AddSpin("Hash", 16, 1, 1024*16, spin_entries);
 
     FlushPrint("stuff is initialized\n");
     while(std::getline(std::cin, line)) {
