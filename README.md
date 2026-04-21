@@ -5,7 +5,7 @@ Current ELO: ~1800
 
 This [chess engine](https://en.wikipedia.org/wiki/Chess_engine) uses [**chess-library**](https://github.com/Disservin/chess-library) internally.
 
-BrainDead is a [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)-compliant [chess engine](https://en.wikipedia.org/wiki/Chess_engine) created by a c++ beginner, so expect some questionable design choices.
+BrainDead is a Linux [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)-compliant [chess engine](https://en.wikipedia.org/wiki/Chess_engine) created by a c++ beginner, so expect some questionable design choices.
 
 BrainDead does **NOT** include a [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface), if you want to use a [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface). I recommend [**Cute Chess**](https://cutechess.com/) as it's easy to use.
 
