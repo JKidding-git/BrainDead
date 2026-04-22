@@ -12,20 +12,38 @@ static constexpr chess::PieceType pts[6] = {chess::PieceType::PAWN, chess::Piece
 
 // these values are now tuned
 // yayyyy!
-static constexpr score piece_values[6] = {S(184, 149), S(490, 340), S(484, 392), S(641, 545), S(1269, 945), S(0, 0)};
-static constexpr score passer_bonuses[8] = {S(0, 0), S(26, 26), S(7, 39), S(10, 93), S(61, 155), S(93, 300), S(183, 304), S(0, 0)};
-static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-33, -28), S(-60, -64), S(-106, -110), S(-148, -158), S(-154, -209), S(-161, -209), S(-349, -188), S(0, 0)};
-static constexpr score backward_pawn_penalty[9] = {S(0, 0), S(-34, -18), S(-53, -17), S(-64, -22), S(-83, -21), S(-103, 0), S(-164, 40), S(126, -248), S(0, 0)};
-static constexpr score king_pawn_shield_bonus[4] = {S(0, 0), S(57, -30), S(65, -18), S(58, -11)};
-static constexpr score unsafe_square_penalty[28] = {S(0, 0), S(-10, -14), S(-19, -10), S(-23, -8), S(-25, -6), S(-29, -6), S(-30, -4), S(-33, -3), S(-39, -2), S(-39, -1), S(-41, -1), S(-47, 0), S(-49, 3), S(-51, 5), S(-58, 9), S(-58, 8), S(-59, 9), S(-49, 5), S(-33, 5), S(-77, 29), S(-97, 50), S(-76, -35), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0)};
-static constexpr score bishop_pair_bonus = S(86, 111);
+static constexpr score piece_values[6] = {S(201, 183), S(609, 503), S(632, 532), S(846, 783), S(1605, 1401), S(0, 0)};
+static constexpr score passer_bonuses[8] = {S(0, 0), S(24, 18), S(9, 29), S(15, 78), S(60, 133), S(92, 259), S(201, 303), S(0, 0)};
+static constexpr score isolated_pawn_penalty[9] = {S(0, 0), S(-29, -23), S(-54, -52), S(-97, -90), S(-138, -127), S(-145, -159), S(-149, -144), S(-274, -114), S(-75, -75)};
+static constexpr score backward_pawn_penalty[9] = {S(0, 0), S(-30, -16), S(-46, -15), S(-56, -15), S(-72, -11), S(-89, 9), S(-140, 45), S(53, -132), S(-10, -15)};
+static constexpr score king_pawn_shield_bonus[4] = {S(26, -73), S(72, -90), S(124, -103), S(147, -118)};
+static constexpr score unsafe_square_penalty[28] = {S(-10, -5), S(-10, -13), S(-26, -13), S(-44, -13), S(-63, -9), S(-90, -9), S(-115, -4), S(-145, 1), S(-208, 14), S(-234, 18), S(-273, 21), S(-353, 46), S(-406, 80), S(-467, 113), S(-576, 165), S(-615, 169), S(-677, 186), S(-568, 143), S(-312, 131), S(-621, 274), S(-157, 69), S(-499, -140), S(-10, -5), S(-10, -5), S(-10, -5), S(-10, -5), S(-10, -5), S(-10, -5)};
+static constexpr score bishop_pair_bonus = S(77, 97);
+static constexpr score mobility_knight[9] = {S(117, 52), S(155, 79), S(173, 120), S(181, 152), S(201, 160), S(211, 174), S(228, 180), S(247, 188), S(206, 147)};
+static constexpr score mobility_bishop[14] = {S(147, 45), S(113, 73), S(134, 109), S(161, 133), S(183, 146), S(198, 163), S(210, 179), S(219, 188), S(226, 200), S(247, 204), S(276, 202), S(297, 206), S(259, 225), S(208, 159)};
+static constexpr score mobility_rook[15] = {S(374, 5), S(201, 180), S(216, 196), S(221, 221), S(224, 259), S(235, 274), S(249, 294), S(259, 302), S(281, 307), S(298, 314), S(326, 318), S(339, 330), S(362, 335), S(380, 339), S(316, 268)};
+static constexpr score mobility_queen[28] = {S(0, 0), S(667, 49), S(740, 69), S(555, 298), S(558, 223), S(563, 333), S(581, 413), S(588, 427), S(598, 423), S(610, 435), S(619, 479), S(625, 495), S(638, 519), S(649, 540), S(659, 542), S(661, 576), S(672, 583), S(674, 601), S(689, 597), S(720, 608), S(722, 632), S(735, 632), S(775, 622), S(758, 651), S(798, 627), S(894, 571), S(624, 721), S(1108, 276)};
+static constexpr score stacked_pawns[9] = {S(0, 0), S(0, 0), S(-11, -43), S(-7, -157), S(-55, -71), S(-84, -104), S(-116, -140), S(-152, -180), S(-192, -224)};
 
-// Mobility
-static constexpr score mobility_knight[9] = {S(227, 161), S(271, 189), S(292, 236), S(300, 272), S(323, 281), S(333, 297), S(352, 303), S(374, 311), S(333, 268)};
-static constexpr score mobility_bishop[14] = {S(271, 133), S(230, 168), S(255, 210), S(286, 236), S(311, 252), S(328, 271), S(341, 289), S(351, 299), S(357, 313), S(381, 316), S(414, 313), S(439, 317), S(393, 339), S(345, 271)};
-static constexpr score mobility_rook[15] = {S(588, 125), S(377, 347), S(395, 364), S(399, 393), S(402, 437), S(413, 454), S(430, 476), S(440, 485), S(466, 490), S(485, 498), S(517, 501), S(531, 514), S(556, 520), S(578, 523), S(516, 452)};
-static constexpr score mobility_queen[28] = {S(0, 0), S(1073, 157), S(1097, 152), S(860, 610), S(862, 521), S(867, 648), S(887, 743), S(894, 758), S(905, 752), S(918, 765), S(928, 816), S(933, 835), S(949, 862), S(960, 886), S(971, 888), S(972, 928), S(984, 935), S(985, 955), S(1002, 950), S(1039, 962), S(1039, 990), S(1053, 989), S(1102, 974), S(1080, 1009), S(1126, 979), S(1240, 911), S(928, 1083), S(1785, 448)};
 
+score stacked_pawn_eval(const chess::Board& board, chess::Color color, Trace& trace) {
+    score value = S(0, 0);
+    chess::Bitboard pawns = board.pieces(chess::PieceType::PAWN, color);
+
+    for (int file = 0; file < 8; file++) {
+        int count = (pawns & chess::Bitboard(chess::File(file))).count();
+
+        if (count <= 1) continue;
+
+        #ifdef TUNE
+            trace.stacked_pawns[count][static_cast<bool>(color)]++;
+        #endif
+
+        value += stacked_pawns[count];
+    }
+
+    return value;
+}
 
 score eval_mobility(const chess::Board& board, chess::Color color, Trace& trace) {
     score value = S(0, 0);
@@ -127,7 +145,7 @@ score eval_unsafe_squares(const chess::Board& board, chess::Color color, Trace& 
     int count = unsafe_squares.count();
 
     #ifdef TUNE
-        trace.unsafe_square_penalty[count][static_cast<bool>(color)] += count;
+        trace.unsafe_square_penalty[count][static_cast<bool>(color)]++;
     #endif
 
     value += unsafe_square_penalty[count];
@@ -293,6 +311,7 @@ score eval_colors(const chess::Board& board, Trace& trace) {
     value += eval_king_safety(board, chess::Color::WHITE, trace) - eval_king_safety(board, chess::Color::BLACK, trace);
     value += eval_pawn_structure(board, chess::Color::WHITE, trace) - eval_pawn_structure(board, chess::Color::BLACK, trace);
     value += eval_mobility(board, chess::Color::WHITE, trace) - eval_mobility(board, chess::Color::BLACK, trace);
+    value += stacked_pawn_eval(board, chess::Color::WHITE, trace) - stacked_pawn_eval(board, chess::Color::BLACK, trace);
 
     return value;
 }

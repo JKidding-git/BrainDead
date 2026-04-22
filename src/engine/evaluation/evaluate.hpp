@@ -13,12 +13,11 @@ struct Trace {
     int32_t king_pawn_shield_bonus[4][2];
     int32_t unsafe_square_penalty[28][2];
     int32_t bishop_pair_bonus[2];
-
-    // Mobility
     int32_t mobility_knight[9][2];
     int32_t mobility_bishop[14][2];
     int32_t mobility_rook[15][2];
     int32_t mobility_queen[28][2];
+    int32_t stacked_pawns[9][2];
 };
 
 int evaluate(const chess::Board& board, Trace& trace);

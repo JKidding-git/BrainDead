@@ -1,7 +1,7 @@
 
 # BrainDead
 
-Current ELO: ~2240
+Current ELO: ~2281
 
 This [chess engine](https://en.wikipedia.org/wiki/Chess_engine) uses [**chess-library**](https://github.com/Disservin/chess-library) internally.
 

@@ -37,3 +37,4 @@ EVALUATION:
 - King unsafe squares (squares that can potentially be checked.)
 - Bishop pair bonus
 - Mobility
+- Stacked pawns
