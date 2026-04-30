@@ -72,7 +72,9 @@ score eval_mobility(const chess::Board& board, chess::Color color, Trace& trace)
     }
 
     our_pawn &= pawn_stater_rank;
-    our_pawn = our_pawn << 8;
+
+    if (color == chess::Color::WHITE) our_pawn = our_pawn << 8;
+    else our_pawn >> 8;
 
     // Mobility itself
     while (knights) {

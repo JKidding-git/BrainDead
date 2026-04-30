@@ -6,7 +6,7 @@
 
 #include <vector>
 
-enum class FLAGS{
+enum class FLAGS {
     NONEBOUND,
     UPPERBOUND,
     LOWERBOUND,

@@ -17,13 +17,15 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
     if (bestValue >= beta) return bestValue;
     if (bestValue > alpha) alpha = bestValue;
 
+    ess.pvLength[ply] = ply;
+
     chess::Movelist moves;
     chess::movegen::legalmoves<chess::movegen::MoveGenType::CAPTURE>(moves, board);
     ScoreMoves<true>(board, moves, ess, ply, chess::Move::NULL_MOVE);
 
 
-    for (int i = 0; i < moves.size(); ++i) {
-        ++ess.nodes;
+    for (int i = 0; i < moves.size(); i++) {
+        ess.nodes++;
 
         PickMove(moves, i);
         chess::Move move = moves[i];
@@ -32,33 +34,37 @@ int qSearch(chess::Board& board, int alpha, int beta, int ply, EngineSearchStuff
         int score = -qSearch(board, -beta, -alpha, ply + 1, ess, ec, t0, trace);
         board.unmakeMove(move);
 
-        if (score > bestValue) {
-            bestValue = score;
-            if (score > alpha) {
-                alpha = score;
-                if (score >= beta) break;
-            }
+        if (score > bestValue) bestValue = score;
+
+        if (score > alpha) {
+            alpha = score;
+            AddPV(move, ess, ply);
         }
+
+        if (alpha >= beta) break;
     }
 
     return bestValue;
 }
 
-int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0, Trace& trace) {
+int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, EngineSearchStuff& ess, EngineController& ec, clk t0, Trace& trace, bool shouldNull) {
     bool time = checkTime(false, ec, ess, t0);
     if (time) return 0;
     if (ply >= MAX_PLY) return evaluate(board, trace);
 
     
     ess.pvLength[ply] = ply;
-    bool RootNode = ply == 0;
+    bool NotRootNode = ply > 0;
     uint64_t hash = board.hash();
+    bool inCheck = board.inCheck();
+    chess::Color side = board.sideToMove();
+    int score = 0;
     
     // just a little optimization trick, hopefully it works.
     tt.Prefetch(hash);
 
-    if (!RootNode) {
-        if (board.isRepetition(1)) return -5;
+    if (NotRootNode) {
+        if (board.isRepetition(1))  return -5;
         if (board.isHalfMoveDraw()) return 0;
 
         // Mate Distance Pruning
@@ -73,33 +79,57 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
     bool tt_hit = tte.key == hash;
     chess::Move ttMove = tt_hit ? tte.move : chess::Move::NULL_MOVE;
 
-    int tt_score = 0;
-    if (tt_hit) tt_score = tt.ScoreFromTT(tte.score, ply);
-    else tt_score = VALUE_NONE;
+    bool isPV = (beta - alpha > 1);
+    int tt_score = tt_hit ? tt.ScoreFromTT(tte.score, ply) : VALUE_NONE;
 
-    if (!RootNode && tte.depth >= depth && tt_hit) {
-        if (tte.flag == static_cast<uint8_t>(FLAGS::LOWERBOUND)) alpha = std::max(alpha, tt_score);
-        else if (tte.flag == static_cast<uint8_t>(FLAGS::UPPERBOUND)) beta = std::min(beta, tt_score);
-
-
-        if (alpha >= beta) return tt_score;
+    if (tte.depth >= depth && tt_hit && NotRootNode) {
+        if (tte.flag == static_cast<uint8_t>(FLAGS::EXACTBOUND)) return tt_score;
+        if (tte.flag == static_cast<uint8_t>(FLAGS::LOWERBOUND) && tt_score >= beta && !isPV) return tt_score;
+        if (tte.flag == static_cast<uint8_t>(FLAGS::UPPERBOUND) && tt_score < alpha && !isPV) return tt_score;
     }
 
-    bool inCheck = board.inCheck();
+    int static_eval = (!isPV && NotRootNode && !inCheck && beta < VALUE_MATE_IN_PLY && depth <= 7) ? evaluate(board, trace) : -VALUE_NONE;
+
+    if (static_eval != -VALUE_NONE) {
+        
+        // RFP
+        if (depth <= 7 && static_eval - 70 * depth >= beta)
+            return static_eval - 70 * depth;
+
+        // RAZOR
+        if (depth <= 3 && static_eval + 300 + 60 * depth < alpha)
+            return qSearch(board, alpha, beta, ply, ess, ec, t0, trace);
+    }
 
     // Null Move Pruning
-    if (depth >= 3 && !inCheck) {
-        board.makeNullMove();
-        int score = -alphaBeta(board, -beta, -beta + 1, depth - 2, ply + 1, ess, ec, t0, trace);
-        board.unmakeNullMove();
+    if (
+        depth >= 3 && !inCheck && !isPV && shouldNull &&
+        beta < VALUE_MATE_IN_PLY && NotRootNode &&
 
-        if (score >= beta) {
-            if (score >= VALUE_TB_WIN_IN_MAX_PLY) score = beta;
+        // A bit messy, but I guess it works.
+        (
+            board.pieces(chess::PieceType::KNIGHT, side) |
+            board.pieces(chess::PieceType::BISHOP, side) |
+            board.pieces(chess::PieceType::ROOK, side) |
+            board.pieces(chess::PieceType::QUEEN, side)
+        ).getBits()
+    ) {
 
-            return score;
+        if (static_eval == -VALUE_NONE) static_eval = evaluate(board, trace);
+
+        if (static_eval >= beta) {
+            int R = depth >= 7 ? 4 : 3;
+
+            board.makeNullMove();
+            int nmp_score = -alphaBeta(board, -beta, -beta + 1, depth - R - 1, ply + 1, ess, ec, t0, trace, false);
+            board.unmakeNullMove();
+
+            if (nmp_score >= beta) return nmp_score;
         }
-
     }
+
+    // IIR
+    if (depth >= 4 && !tt_hit && !inCheck) depth--;
 
     int bestScore = -VALUE_INFINITE;
     chess::Move bestMove = chess::Move::NULL_MOVE;
@@ -109,45 +139,53 @@ int alphaBeta(chess::Board& board, int alpha, int beta, int depth, int ply, Engi
     chess::movegen::legalmoves(moves, board);
     ScoreMoves<false>(board, moves, ess, ply, ttMove);
 
-    for (int i = 0; i < moves.size(); ++i) {
+    for (int i = 0; i < moves.size(); i++) {
         ess.nodes++;
 
         PickMove(moves, i);
         chess::Move move = moves[i];
 
         board.makeMove(move);
-        int score = -alphaBeta(board, -beta, -alpha, depth - 1, ply + 1, ess, ec, t0, trace);
+        
+        if (i == 0) {
+            score = -alphaBeta(board, -beta, -alpha, depth - 1, ply + 1, ess, ec, t0, trace, true);
+        } else {
+            score = -alphaBeta(board, -alpha - 1, -alpha, depth - 1, ply + 1, ess, ec, t0, trace, true);
+            if (score > alpha && isPV) {
+                score = -alphaBeta(board, -beta, -alpha, depth - 1, ply + 1, ess, ec, t0, trace, true);
+            }
+        }
+
         board.unmakeMove(move);
 
-        if (score > bestScore) {
-            bestScore = score;
+        if (score > bestScore) bestScore = score;
+
+        if (score > alpha) {
+            alpha = score;
             bestMove = move;
             AddPV(move, ess, ply);
+        }
 
-            if (score > alpha) {
-                alpha = score;
-                if (score >= beta) {
-                    if (!board.isCapture(move)) {
-                        AddKiller(move, ess, ply);
+        if (alpha >= beta) {
+            if (!board.isCapture(move)) {
+                AddKiller(move, ess, ply);
 
-                        int bonus = bonus_squared[depth - 1];
+                int bonus = bonus_squared[depth - 1];
 
-                        bool side = board.sideToMove() == chess::Color::WHITE;
-                        int from = move.from().index();
-                        int to = move.to().index();
+                bool side = board.sideToMove() == chess::Color::WHITE;
+                int from = move.from().index();
+                int to = move.to().index();
 
-                        int history_score = (
-                            bonus
-                            - ess.history[side][from][to]
-                            * bonus
-                            / 16384 
-                        );
+                int history_score = (
+                    bonus
+                    - ess.history[side][from][to]
+                    * bonus
+                    / 16384 
+                );
 
-                        ess.history[side][from][to] += history_score;
-                    }
-                    break;
-                }
+                ess.history[side][from][to] += history_score;
             }
+            break;
         }
     }
 
@@ -181,11 +219,11 @@ void IterativeDeepening(chess::Board& board, EngineSearchStuff& ess, EngineContr
     int maxDepth = Load(ec.max_depth);
     if (maxDepth <= 0) maxDepth = MAX_PLY;
 
-    for (int d = 1; d <= maxDepth; ++d) {
+    for (int d = 1; d <= maxDepth; d++) {
         ResetHistory(ess);
 
         Trace trace{}; // Reset on each iter since it's only used for tuning.
-        score = alphaBeta(board, -VALUE_INFINITE, VALUE_INFINITE, d, 0, ess, ec, t0, trace);
+        score = alphaBeta(board, -VALUE_INFINITE, VALUE_INFINITE, d, 0, ess, ec, t0, trace, true);
 
         if (!(Load(ec.is_running)) || checkTime(true, ec, ess, t0)) break;
 

@@ -46,7 +46,7 @@ inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, Engine
 
             chess::Move& move = moves[move_index];
 
-            if (move == ttMove) {
+            if (move == ttMove && ttMove != chess::Move::NULL_MOVE) {
                 move.setScore(TT_BONUS);
                 continue;
             }

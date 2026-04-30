@@ -176,6 +176,8 @@ void UCILoop() {
         } else if (FirstWordEqualTo(word, "isready")) {
             FlushPrint("readyok\n");
         } else if (FirstWordEqualTo(word, "ucinewgame")) {
+            StopSearch(engine_controller);
+            if (search.joinable()) search.join();
             board.setFen(chess::constants::STARTPOS);
             Init(uci_go_time_controller);
         } else if (FirstWordEqualTo(word, "position")) {
@@ -183,6 +185,7 @@ void UCILoop() {
         } else if (FirstWordEqualTo(word, "go")) {
             Init(uci_go_time_controller);
             KeepSearchRunning(engine_controller);
+            if (search.joinable()) search.join();
             UCIGo(line, uci_controller, uci_go_time_controller, engine_controller, board, ess);
         } else if (FirstWordEqualTo(word, "stop")) {
             StopSearch(engine_controller);
@@ -199,4 +202,7 @@ void UCILoop() {
         }
 
     }
+
+    StopSearch(engine_controller);
+    if (search.joinable()) search.join();
 }

@@ -15,6 +15,10 @@ SEARCH:
 - Principal Variation (PV) tracking
 - Node counting
 - Mating detection
+- Principal Variation Search
+- Reverse Futility Pruning
+- Razoring
+- Internal Iterative Reductions
 
 MOVE PICKER:
 - MVV-LVA (Most Valuable Victim - Least Valuable Attacker) scoring

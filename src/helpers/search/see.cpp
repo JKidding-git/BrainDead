@@ -1,6 +1,6 @@
 #include "see.hpp"
 
-static constexpr int values[6] = {100, 325, 350, 500, 900, 0};
+static constexpr int values[7] = {100, 325, 350, 500, 900, 0, 0};
 
 chess::Bitboard GetLeastValuablePieceSQ(const chess::Board& board, chess::Color color, chess::Bitboard attacks_bits, chess::PieceType &piece) {
     for (chess::PieceType p : {chess::PieceType::PAWN, chess::PieceType::KNIGHT, chess::PieceType::BISHOP, chess::PieceType::ROOK, chess::PieceType::QUEEN, chess::PieceType::KING}) {
