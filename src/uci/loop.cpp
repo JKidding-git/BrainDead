@@ -24,7 +24,7 @@
 
 void UCICommandOutput() {
     FlushPrint("id name BrainDead\n");
-    FlushPrint("id author JKidding\n\n");
+    FlushPrint("id author LCFoxiii\n\n");
 
     ShowAllSpinsForUCI(spin_entries);
     ShowAllChecksForUCI(check_entries);
